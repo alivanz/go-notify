@@ -2,6 +2,31 @@
 
 ```Go
 func main() {
+  once := notify.NewNotifyOnce()
+  for i := 0; i < 3; i++ {
+    go func(i){
+      <-notify.Listen()
+      log.Printf("%d first")
+      <-notify.Listen()
+      log.Printf("%d second")
+    }(int i)
+  }
+  once.Notify()
+}
+```
+
+```txt
+0 first
+1 first
+2 first
+0 second
+1 second
+2 second
+```
+
+# Notify Bytes
+```Go
+func main() {
   bytesNotify := notify.NewBytes([]byte("first"))
   for i := 0; i < 3; i++ {
     go func(i){
@@ -19,7 +44,7 @@ func main() {
 }
 ```
 
-```
+```txt
 0 first
 1 first
 2 first
