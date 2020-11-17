@@ -76,6 +76,36 @@ lucy got msg#2
 Server side
 ```go
 func main() {
-  n := notify.NewInterface()
+	n := notify.NewInterface(nil)
+	go ionotify.ListenAndServe(context.Background(), "0.0.0.0:6000", n)
+	// feed data
+	for range time.NewTicker(1 * time.Second).C {
+		t := time.Now()
+		n.Notify(t)
+		log.Printf("server notify %v", t.String())
+	}
 }
+
+```
+
+Client / Listener side
+```go
+func main() {
+	n := notify.NewInterface(nil)
+	go ionotify.Subscribe(context.Background(), "127.0.0.1:6000", reflect.TypeOf(time.Time{}), n)
+	c := notify.Closed()
+	for {
+		select {
+		case <-c:
+			var i interface{}
+			i, c = n.Listen()
+			if i == nil {
+				continue
+			}
+			t := i.(*time.Time)
+			log.Printf("server notify %v", t.String())
+		}
+	}
+}
+
 ```
