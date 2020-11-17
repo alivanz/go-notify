@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/gob"
 	"net"
+	"reflect"
 
 	"github.com/alivanz/go-notify"
 )
@@ -25,4 +26,15 @@ func Serve(ctx context.Context, listener net.Listener, n *notify.Interface) erro
 			Encode(ctx, enc, n)
 		}()
 	}
+}
+
+// Listen dial and listen to notify
+func Listen(ctx context.Context, host string, Type reflect.Type, n *notify.Interface) error {
+	conn, err := net.Dial("tcp", host)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	dec := gob.NewDecoder(conn)
+	return Decode(ctx, Type, dec, n)
 }
