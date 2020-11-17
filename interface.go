@@ -18,7 +18,7 @@ func (i *Interface) Notify(v interface{}) {
 	})
 }
 
-func (i *Interface) Listen(interface{}) (interface{}, <-chan struct{}) {
+func (i *Interface) Listen() (interface{}, <-chan struct{}) {
 	var v interface{}
 	return v, i.base.Listen(func() {
 		v = i.v
