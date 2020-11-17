@@ -9,6 +9,16 @@ import (
 	"github.com/alivanz/go-notify"
 )
 
+// ListenAndServe open tcp listen and serve notify
+func ListenAndServe(ctx context.Context, listen string, n *notify.Interface) error {
+	listener, err := net.Listen("tcp", listen)
+	if err != nil {
+		return err
+	}
+	defer listener.Close()
+	return Serve(ctx, listener, n)
+}
+
 // Serve notify to net.Listener
 func Serve(ctx context.Context, listener net.Listener, n *notify.Interface) error {
 	for {
@@ -28,8 +38,8 @@ func Serve(ctx context.Context, listener net.Listener, n *notify.Interface) erro
 	}
 }
 
-// Listen dial and listen to notify
-func Listen(ctx context.Context, host string, Type reflect.Type, n *notify.Interface) error {
+// Subscribe dial and listen to notify
+func Subscribe(ctx context.Context, host string, Type reflect.Type, n *notify.Interface) error {
 	conn, err := net.Dial("tcp", host)
 	if err != nil {
 		return err

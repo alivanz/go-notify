@@ -71,3 +71,11 @@ bob got msg#2
 lucy got msg#2
 ....
 ```
+
+# Network notify
+Server side
+```go
+func main() {
+  n := notify.NewInterface()
+}
+```
