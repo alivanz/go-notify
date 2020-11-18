@@ -25,6 +25,7 @@ type decSubs struct {
 	err    chan error
 }
 
+// NewDecoder create default decoder
 func NewDecoder(r io.Reader) Decoder {
 	return gob.NewDecoder(r)
 }

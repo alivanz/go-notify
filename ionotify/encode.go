@@ -13,8 +13,10 @@ type Encoder interface {
 	Encode(v interface{}) error
 }
 
+// NewEncoderFunc Interface to create new encoder
 type NewEncoderFunc func(w io.Writer) Encoder
 
+// NewEncoder create default encoder
 func NewEncoder(w io.Writer) Encoder {
 	return gob.NewEncoder(w)
 }
