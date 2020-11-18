@@ -81,7 +81,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-  defer server.Stop()
+	defer server.Stop()
 	// feed data
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
