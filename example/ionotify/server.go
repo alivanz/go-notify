@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"time"
 
@@ -11,9 +10,20 @@ import (
 
 func main() {
 	n := notify.NewInterface(nil)
-	go ionotify.ListenAndServe(context.Background(), "0.0.0.0:6000", n)
+	server, err := ionotify.ListenAndServe("0.0.0.0:6000", n)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer server.Stop()
 	// feed data
-	for range time.NewTicker(1 * time.Second).C {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case err := <-server.Err():
+			log.Fatal(err)
+		case <-ticker.C:
+		}
 		t := time.Now()
 		n.Notify(t)
 		log.Printf("server notify %v", t.String())

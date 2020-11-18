@@ -7,36 +7,65 @@ import (
 	"github.com/alivanz/go-notify"
 )
 
+type Server interface {
+	Stop()
+	Err() <-chan error
+}
+
+type server struct {
+	listener net.Listener
+	encf     NewEncoderFunc
+	n        *notify.Interface
+	err      chan error
+}
+
 // ListenAndServe open tcp listen and serve notify
-func ListenAndServe(ctx context.Context, listen string, n *notify.Interface) error {
+func ListenAndServe(listen string, n *notify.Interface) (Server, error) {
 	listener, err := net.Listen("tcp", listen)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer listener.Close()
-	return Serve(ctx, listener, n)
+	return Serve(listener, n)
 }
 
 // Serve notify to net.Listener
-func Serve(ctx context.Context, listener net.Listener, n *notify.Interface) error {
-	return ServeWithDecoder(ctx, listener, n, NewEncoder)
+func Serve(listener net.Listener, n *notify.Interface) (Server, error) {
+	return ServeWithDecoder(listener, n, NewEncoder)
 }
 
 // ServeWithDecoder notify to net.Listener with custom decoder
-func ServeWithDecoder(ctx context.Context, listener net.Listener, n *notify.Interface, encf NewEncoderFunc) error {
+func ServeWithDecoder(listener net.Listener, n *notify.Interface, encf NewEncoderFunc) (Server, error) {
+	s := &server{
+		listener: listener,
+		encf:     encf,
+		n:        n,
+		err:      make(chan error, 1),
+	}
+	go s.run()
+	return s, nil
+}
+
+func (s *server) run() {
+	defer close(s.err)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	for {
-		select {
-		case <-ctx.Done():
-		default:
-		}
-		conn, err := listener.Accept()
+		conn, err := s.listener.Accept()
 		if err != nil {
-			return err
+			s.err <- err
+			return
 		}
 		go func() {
 			defer conn.Close()
-			enc := encf(conn)
-			Encode(ctx, enc, n)
+			enc := s.encf(conn)
+			Encode(ctx, enc, s.n)
 		}()
 	}
+}
+
+func (s *server) Stop() {
+	s.listener.Close()
+}
+func (s *server) Err() <-chan error {
+	return s.err
 }
