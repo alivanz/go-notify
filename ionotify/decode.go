@@ -27,6 +27,11 @@ func Subscribe(host string, Type reflect.Type, n *notify.Interface) (Subscriptio
 	if err != nil {
 		return nil, err
 	}
+	return SubscribeFromConn(conn, Type, n)
+}
+
+// SubscribeFromConn listen to notify
+func SubscribeFromConn(conn io.ReadCloser, Type reflect.Type, n *notify.Interface) (Subscription, error) {
 	subs := &decSubs{
 		conn: conn,
 		n:    n,
