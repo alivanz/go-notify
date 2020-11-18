@@ -85,17 +85,22 @@ func main() {
 		log.Printf("server notify %v", t.String())
 	}
 }
-
 ```
 
 Client / Listener side
 ```go
 func main() {
 	n := notify.NewInterface(nil)
-	go ionotify.Subscribe(context.Background(), "127.0.0.1:6000", reflect.TypeOf(time.Time{}), n)
+	subs, err := ionotify.Subscribe("127.0.0.1:6000", reflect.TypeOf(time.Time{}), n)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer subs.Unsubscribe()
 	c := notify.Closed()
 	for {
 		select {
+		case err := <-subs.Err():
+			log.Fatal(err)
 		case <-c:
 			var i interface{}
 			i, c = n.Listen()
@@ -107,5 +112,4 @@ func main() {
 		}
 	}
 }
-
 ```
