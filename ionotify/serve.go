@@ -2,7 +2,6 @@ package ionotify
 
 import (
 	"context"
-	"encoding/gob"
 	"net"
 
 	"github.com/alivanz/go-notify"
@@ -20,6 +19,11 @@ func ListenAndServe(ctx context.Context, listen string, n *notify.Interface) err
 
 // Serve notify to net.Listener
 func Serve(ctx context.Context, listener net.Listener, n *notify.Interface) error {
+	return ServeWithDecoder(ctx, listener, n, NewEncoder)
+}
+
+// ServeWithDecoder notify to net.Listener with custom decoder
+func ServeWithDecoder(ctx context.Context, listener net.Listener, n *notify.Interface, encf NewEncoderFunc) error {
 	for {
 		select {
 		case <-ctx.Done():
@@ -31,7 +35,7 @@ func Serve(ctx context.Context, listener net.Listener, n *notify.Interface) erro
 		}
 		go func() {
 			defer conn.Close()
-			enc := gob.NewEncoder(conn)
+			enc := encf(conn)
 			Encode(ctx, enc, n)
 		}()
 	}

@@ -14,12 +14,19 @@ type Decoder interface {
 	Decode(v interface{}) error
 }
 
+// NewDecoderFunc Interface to create new decoder
+type NewDecoderFunc func(r io.Reader) Decoder
+
 type decSubs struct {
 	dec    Decoder
 	closer io.Closer
 	n      *notify.Interface
 	typ    reflect.Type
 	err    chan error
+}
+
+func NewDecoder(r io.Reader) Decoder {
+	return gob.NewDecoder(r)
 }
 
 // Subscribe dial and listen to notify

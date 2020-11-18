@@ -2,6 +2,8 @@ package ionotify
 
 import (
 	"context"
+	"encoding/gob"
+	"io"
 
 	"github.com/alivanz/go-notify"
 )
@@ -9,6 +11,12 @@ import (
 // Encoder generic encoder
 type Encoder interface {
 	Encode(v interface{}) error
+}
+
+type NewEncoderFunc func(w io.Writer) Encoder
+
+func NewEncoder(w io.Writer) Encoder {
+	return gob.NewEncoder(w)
 }
 
 // Encode push any notify data to encoder
