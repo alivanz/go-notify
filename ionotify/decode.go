@@ -15,10 +15,11 @@ type Decoder interface {
 }
 
 type decSubs struct {
-	conn io.ReadCloser
-	n    *notify.Interface
-	typ  reflect.Type
-	err  chan error
+	dec    Decoder
+	closer io.Closer
+	n      *notify.Interface
+	typ    reflect.Type
+	err    chan error
 }
 
 // Subscribe dial and listen to notify
@@ -32,11 +33,17 @@ func Subscribe(host string, Type reflect.Type, n *notify.Interface) (Subscriptio
 
 // SubscribeFromConn listen to notify
 func SubscribeFromConn(conn io.ReadCloser, Type reflect.Type, n *notify.Interface) (Subscription, error) {
+	return SubscribeFromDecoder(gob.NewDecoder(conn), conn, Type, n)
+}
+
+// SubscribeFromDecoder listen to notify
+func SubscribeFromDecoder(dec Decoder, closer io.Closer, Type reflect.Type, n *notify.Interface) (Subscription, error) {
 	subs := &decSubs{
-		conn: conn,
-		n:    n,
-		typ:  Type,
-		err:  make(chan error, 1),
+		dec:    dec,
+		closer: closer,
+		n:      n,
+		typ:    Type,
+		err:    make(chan error, 1),
 	}
 	go subs.run()
 	return subs, nil
@@ -44,10 +51,9 @@ func SubscribeFromConn(conn io.ReadCloser, Type reflect.Type, n *notify.Interfac
 
 func (subs *decSubs) run() {
 	defer close(subs.err)
-	dec := gob.NewDecoder(subs.conn)
 	for {
 		rdata := reflect.New(subs.typ)
-		if err := dec.Decode(rdata.Interface()); err != nil {
+		if err := subs.dec.Decode(rdata.Interface()); err != nil {
 			subs.err <- err
 			return
 		}
@@ -56,7 +62,7 @@ func (subs *decSubs) run() {
 }
 
 func (subs *decSubs) Unsubscribe() {
-	subs.conn.Close()
+	subs.closer.Close()
 }
 
 func (subs *decSubs) Err() <-chan error {
