@@ -30,11 +30,11 @@ func ListenAndServe(listen string, n *notify.Interface) (Server, error) {
 
 // Serve notify to net.Listener
 func Serve(listener net.Listener, n *notify.Interface) (Server, error) {
-	return ServeWithDecoder(listener, n, NewEncoder)
+	return ServeWithEncoder(listener, n, NewEncoder)
 }
 
-// ServeWithDecoder notify to net.Listener with custom decoder
-func ServeWithDecoder(listener net.Listener, n *notify.Interface, encf NewEncoderFunc) (Server, error) {
+// ServeWithEncoder notify to net.Listener with custom encoder
+func ServeWithEncoder(listener net.Listener, n *notify.Interface, encf NewEncoderFunc) (Server, error) {
 	s := &server{
 		listener: listener,
 		encf:     encf,
