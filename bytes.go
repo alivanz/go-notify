@@ -18,7 +18,10 @@ func (i *Bytes) Notify(v []byte) {
 	})
 }
 
-func (i *Bytes) Listen() ([]byte, <-chan struct{}) {
+func (i *Bytes) Listen() (interface{}, <-chan struct{}) {
+	return i.ListenBytes()
+}
+func (i *Bytes) ListenBytes() ([]byte, <-chan struct{}) {
 	var v []byte
 	return v, i.base.Listen(func() {
 		v = i.v

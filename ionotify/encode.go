@@ -22,7 +22,7 @@ func NewEncoder(w io.Writer) Encoder {
 }
 
 // Encode push any notify data to encoder
-func Encode(ctx context.Context, enc Encoder, n *notify.Interface) error {
+func Encode(ctx context.Context, enc Encoder, n notify.Listener) error {
 	c := notify.Closed()
 	for {
 		select {

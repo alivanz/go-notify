@@ -15,12 +15,12 @@ type Server interface {
 type server struct {
 	listener net.Listener
 	encf     NewEncoderFunc
-	n        *notify.Interface
+	n        notify.Listener
 	err      chan error
 }
 
 // ListenAndServe open tcp listen and serve notify
-func ListenAndServe(listen string, n *notify.Interface) (Server, error) {
+func ListenAndServe(listen string, n notify.Listener) (Server, error) {
 	listener, err := net.Listen("tcp", listen)
 	if err != nil {
 		return nil, err
@@ -29,12 +29,12 @@ func ListenAndServe(listen string, n *notify.Interface) (Server, error) {
 }
 
 // Serve notify to net.Listener
-func Serve(listener net.Listener, n *notify.Interface) (Server, error) {
+func Serve(listener net.Listener, n notify.Listener) (Server, error) {
 	return ServeWithEncoder(listener, n, NewEncoder)
 }
 
 // ServeWithEncoder notify to net.Listener with custom encoder
-func ServeWithEncoder(listener net.Listener, n *notify.Interface, encf NewEncoderFunc) (Server, error) {
+func ServeWithEncoder(listener net.Listener, n notify.Listener, encf NewEncoderFunc) (Server, error) {
 	s := &server{
 		listener: listener,
 		encf:     encf,
