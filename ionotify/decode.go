@@ -20,7 +20,7 @@ type NewDecoderFunc func(r io.Reader) Decoder
 type decSubs struct {
 	dec    Decoder
 	closer io.Closer
-	n      *notify.Interface
+	n      notify.Notifier
 	typ    reflect.Type
 	err    chan error
 }
@@ -31,7 +31,7 @@ func NewDecoder(r io.Reader) Decoder {
 }
 
 // Subscribe dial and listen to notify
-func Subscribe(host string, Type reflect.Type, n *notify.Interface) (Subscription, error) {
+func Subscribe(host string, Type reflect.Type, n notify.Notifier) (Subscription, error) {
 	conn, err := net.Dial("tcp", host)
 	if err != nil {
 		return nil, err
@@ -40,12 +40,12 @@ func Subscribe(host string, Type reflect.Type, n *notify.Interface) (Subscriptio
 }
 
 // SubscribeFromConn listen to notify
-func SubscribeFromConn(conn io.ReadCloser, Type reflect.Type, n *notify.Interface) (Subscription, error) {
+func SubscribeFromConn(conn io.ReadCloser, Type reflect.Type, n notify.Notifier) (Subscription, error) {
 	return SubscribeFromDecoder(gob.NewDecoder(conn), conn, Type, n)
 }
 
 // SubscribeFromDecoder listen to notify
-func SubscribeFromDecoder(dec Decoder, closer io.Closer, Type reflect.Type, n *notify.Interface) (Subscription, error) {
+func SubscribeFromDecoder(dec Decoder, closer io.Closer, Type reflect.Type, n notify.Notifier) (Subscription, error) {
 	subs := &decSubs{
 		dec:    dec,
 		closer: closer,
